@@ -1,6 +1,5 @@
 import React from "react";
-// import Image from "next/image";
-// import rectangle from "../../public/rectangle.svg";
+
 
 const Navbar = () => {
     return (
@@ -25,7 +24,6 @@ const Navbar = () => {
                 Technology
               </a>
             </li>
-
             <li>
               <a href="/" className="hover:text-Gris text-Gris-claro focus:outline-none focus:text-Azul text-sm md:text-base">
                 About
