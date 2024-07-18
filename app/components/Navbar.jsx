@@ -25,33 +25,12 @@ const Navbar = () => {
                 Technology
               </a>
             </li>
-            <li>
-              <a href="/" className="hover:text-Gris text-Gris-claro focus:outline-none focus:text-Azul text-sm md:text-base">
-                Case studies
-              </a>
-            </li>
+
             <li>
               <a href="/" className="hover:text-Gris text-Gris-claro focus:outline-none focus:text-Azul text-sm md:text-base">
                 About
               </a>
             </li>
-            {/* <li>
-              <a
-                href="/"
-                className="hover:text-Gris text-white font-medium flex items-center focus:outline-none focus:text-Azul text-sm md:text-base"
-              >
-                <span className="mr-2">
-                  <Image
-                    className=""
-                    src={rectangle}
-                    alt="Hire us"
-                    width={20}
-                    height={20}
-                  />
-                </span>
-                Hire us
-              </a>
-            </li> */}
           </ul>
         </div>
       </nav>
