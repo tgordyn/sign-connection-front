@@ -7,10 +7,22 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        inter: ["Inter"],
+        montserrat: ["Montserrat"],
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
+      colors: {
+        Azul: "#3871ff",
+        Blanco: "#fffff",
+        Celeste: "#9bb8ff",
+        Gris: "#7f7f7f",
+        "Gris-claro": "#9399a2",
+        "Gris-oscuro": "#283345",
       },
     },
   },
