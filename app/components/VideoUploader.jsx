@@ -73,7 +73,7 @@ const VideoUploader = () => {
     setVideoFile(file);
     setVideoURL(URL.createObjectURL(file));
     setActiveTab('view');
-    setTranslation('Haga click en Traducir');
+    setTranslation('');
     setError('');
   };
 
@@ -83,7 +83,7 @@ const VideoUploader = () => {
     setVideoFile(file);
     setVideoURL(URL.createObjectURL(file));
     setActiveTab('view');
-    setTranslation('Haga click en Traducir');
+    setTranslation('');
     setError('');
   };
 
@@ -156,7 +156,7 @@ const VideoUploader = () => {
         setVideoFile(file);
         setVideoURL(URL.createObjectURL(blob));
         setActiveTab('view');
-        setTranslation('Haga click en Traducir');
+        setTranslation('');
         setError('');
         setIsRecording(false); // Indicar que la grabación ha terminado
       };
@@ -222,19 +222,15 @@ const VideoUploader = () => {
             </button>
           ) : (
             <button onClick={handleStartRecording} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
-              Grabar Video (3 segundos)
+              Grabar (3 segundos)
             </button>
           )}
         </div>
       )}
 
-      {activeTab === 'view' && (
+      {activeTab === 'view' && videoURL && (
         <div className="flex justify-center items-center mb-4 h-auto">
-          {videoURL ? (
-            <video src={videoURL} controls className="mb-4 w-[640px] h-[360px]" />
-          ) : (
-            <p className="text-Gris-claro mt-12 mb-12 text-center text-3xl">Seleccione un video</p>
-          )}
+          <video src={videoURL} controls className="mb-4 w-[640px] h-[360px]" />
         </div>
       )}
 
@@ -248,9 +244,16 @@ const VideoUploader = () => {
 
       <div className="p-4 mt-4 border rounded bg-gray-100 w-3/4 text-center">
         <h2 className="text-xl font-bold mb-2">
-          {error ? 'Error en el request:' : videoFile ? <>Traducción: <span className='text-blue-500'>{videoFile.name}</span></> : ''}
+          {error ? 'Error en el request:' : videoFile ? <>Traducción: <span className='text-green-700'>{videoFile.name}</span></> : ''}
         </h2>
-        <p>{error ? error : (translation || 'Seleccione o grabe un video para procesar')}</p>
+        <p className="text-lg">
+          {error ? error : (
+            translation ? <span className="text-2xl text-blue-600 font-bold">"{translation}"</span> : (videoFile && !translation && 'Haga click en Traducir')
+          )}
+        </p>
+        {!videoFile && !translation && !error && (
+          <p className="text-lg">Seleccione o grabe un video para procesar</p>
+        )}
       </div>
     </div>
   );
