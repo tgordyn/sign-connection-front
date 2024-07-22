@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useRef, useEffect } from 'react';
 import { Loading } from 'notiflix/build/notiflix-loading-aio';
+import { v4 as uuidv4 } from 'uuid';
 
 const VideoUploader = () => {
   const [videoFile, setVideoFile] = useState(null);
@@ -10,21 +11,30 @@ const VideoUploader = () => {
   const [error, setError] = useState('');
   const [mediaRecorder, setMediaRecorder] = useState(null);
   const [stream, setStream] = useState(null);
+  const [countdown, setCountdown] = useState(null); // Nuevo estado para el temporizador
+  const [isRecording, setIsRecording] = useState(false); // Nuevo estado para el estado de grabación
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const tabsRef = useRef(null);
+  const [greeting, setGreeting] = useState('');
+  const apiPath = 'http://127.0.0.1:8000';
 
   useEffect(() => {
-    if (activeTab === 'record') {
-      tabsRef.current.scrollIntoView({ behavior: 'smooth' });
-      startStream();
-    } else if (stream) {
-      stopStream();
-    }
-    if (activeTab === 'view') {
-      tabsRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [activeTab]);
+    const fetchGreeting = async () => {
+      try {
+        const response = await fetch(apiPath);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setGreeting(data.greeting);
+      } catch (error) {
+        console.error('Error fetching greeting:', error);
+      }
+    };
+
+    fetchGreeting();
+  }, []);
 
   const startStream = async () => {
     try {
@@ -45,6 +55,18 @@ const VideoUploader = () => {
       setStream(null);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'record') {
+      tabsRef.current.scrollIntoView({ behavior: 'smooth' });
+      startStream();
+    } else if (stream) {
+      stopStream();
+    }
+    if (activeTab === 'view') {
+      tabsRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [activeTab]);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -75,14 +97,14 @@ const VideoUploader = () => {
 
     try {
       Loading.circle('Traduciendo...');
-      const response = await fetch('https://your-api-endpoint.com/translate', {
+      const response = await fetch(`${apiPath}/predict`, {
         method: 'POST',
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        setTranslation(data.translation);
+        setTranslation(data.message);
         setError('');
       } else {
         throw new Error('Error al traducir el video');
@@ -98,26 +120,51 @@ const VideoUploader = () => {
     fileInputRef.current.click();
   };
 
+  const generateShortId = () => {
+    return Math.random().toString(36).substring(2, 7);
+  };
+
+  const startCountdown = (seconds, onComplete) => {
+    let counter = seconds;
+    setCountdown(counter);
+    const interval = setInterval(() => {
+      counter -= 1;
+      setCountdown(counter);
+      if (counter === 0) {
+        clearInterval(interval);
+        onComplete();
+        setCountdown(null);
+      }
+    }, 1000);
+  };
+
   const handleStartRecording = () => {
-    const mediaRecorderInstance = new MediaRecorder(stream);
-    setMediaRecorder(mediaRecorderInstance);
-    const chunks = [];
-    mediaRecorderInstance.ondataavailable = (event) => {
-      chunks.push(event.data);
-    };
-    mediaRecorderInstance.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/mp4' });
-      const file = new File([blob], 'recorded-video.mp4', { type: 'video/mp4' });
-      setVideoFile(file);
-      setVideoURL(URL.createObjectURL(blob));
-      setActiveTab('view');
-      setTranslation('Haga click en Traducir');
-      setError('');
-    };
-    mediaRecorderInstance.start();
-    setTimeout(() => {
-      mediaRecorderInstance.stop();
-    }, 3000);
+    startCountdown(3, () => {
+      setIsRecording(true); // Indicar que la grabación ha comenzado
+      const mediaRecorderInstance = new MediaRecorder(stream, {
+        mimeType: 'video/webm; codecs=vp9' // Usa un codec compatible y eficiente
+      });
+      setMediaRecorder(mediaRecorderInstance);
+      const chunks = [];
+      mediaRecorderInstance.ondataavailable = (event) => {
+        chunks.push(event.data);
+      };
+      mediaRecorderInstance.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const uniqueId = generateShortId(); // Genera un ID único corto
+        const file = new File([blob], `recorded-video-${uniqueId}.webm`, { type: 'video/webm' });
+        setVideoFile(file);
+        setVideoURL(URL.createObjectURL(blob));
+        setActiveTab('view');
+        setTranslation('Haga click en Traducir');
+        setError('');
+        setIsRecording(false); // Indicar que la grabación ha terminado
+      };
+      mediaRecorderInstance.start();
+      setTimeout(() => {
+        mediaRecorderInstance.stop();
+      }, 3000);
+    });
   };
 
   return (
@@ -150,11 +197,11 @@ const VideoUploader = () => {
           onDragOver={handleDragOver}
         >
           <p className="text-Gris-claro w-3/4 mt-12 mb-12 text-center text-xl">
-            Arrastre un archivo de video o <span onClick={handleTextClick} className="underline cursor-pointer">haga click para seleccionar localmente</span>
+            Arrastre un archivo de video en mp4 o <span onClick={handleTextClick} className="underline cursor-pointer">haga click para seleccionar localmente</span>
           </p>
           <input
             type="file"
-            accept=".mp4, .avi, .mov, .wmv, .flv, .mkv, .webm, .mpeg, .mpg"
+            accept=".mp4"
             onChange={handleFileChange}
             className="hidden"
             ref={fileInputRef}
@@ -165,9 +212,19 @@ const VideoUploader = () => {
       {activeTab === 'record' && (
         <div className="flex flex-col items-center mb-4 w-3/4 h-auto">
           <video ref={videoRef} autoPlay className="w-1/2 h-auto mb-4" />
-          <button onClick={handleStartRecording} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
-            Grabar Video (3 segundos)
-          </button>
+          {countdown ? (
+            <div className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
+              Grabando en {countdown}
+            </div>
+          ) : isRecording ? (
+            <button className="mb-4 px-4 py-2 bg-red-500 text-white rounded">
+              Grabando...
+            </button>
+          ) : (
+            <button onClick={handleStartRecording} className="mb-4 px-4 py-2 bg-blue-500 text-white rounded">
+              Grabar Video (3 segundos)
+            </button>
+          )}
         </div>
       )}
 
@@ -190,9 +247,9 @@ const VideoUploader = () => {
       </button>
 
       <div className="p-4 mt-4 border rounded bg-gray-100 w-3/4 text-center">
-      <h2 className="text-xl font-bold mb-2">
-      {error ? 'Error en el request:' : videoFile ? <>Traducción: <span className='text-blue-500'>{videoFile.name}</span></> : ''}
-      </h2>
+        <h2 className="text-xl font-bold mb-2">
+          {error ? 'Error en el request:' : videoFile ? <>Traducción: <span className='text-blue-500'>{videoFile.name}</span></> : ''}
+        </h2>
         <p>{error ? error : (translation || 'Seleccione o grabe un video para procesar')}</p>
       </div>
     </div>
