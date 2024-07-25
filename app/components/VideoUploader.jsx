@@ -97,6 +97,7 @@ const VideoUploader = () => {
 
     try {
       Loading.circle('Traduciendo...');
+      console.log("reuest a:", apiPath)
       const response = await fetch(`${apiPath}/predict`, {
         method: 'POST',
         body: formData,
