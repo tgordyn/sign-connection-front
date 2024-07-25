@@ -17,7 +17,7 @@ const VideoUploader = () => {
   const videoRef = useRef(null);
   const tabsRef = useRef(null);
   const [greeting, setGreeting] = useState('');
-  const apiPath = 'http://127.0.0.1:8000';
+  const apiPath = 'https://my-fastapi-app-kw6lwxxmga-rj.a.run.app/';
 
   useEffect(() => {
     const fetchGreeting = async () => {
