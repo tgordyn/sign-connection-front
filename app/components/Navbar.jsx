@@ -13,12 +13,12 @@ const Navbar = () => {
           <li>
             <a
               href="/"
-              className="hover:text-Gris text-white font-medium focus:outline-none focus:text-Azul text-sm md:text-base"
+              className="hover:text-gray-400 text-white font-medium focus:outline-none focus:text-Azul text-sm md:text-base"
             >
               Home
             </a>
           </li>
-          <li>
+          {/* <li>
             <a
               href="/"
               className="hover:text-Gris text-Gris-claro focus:outline-none focus:text-Azul text-sm md:text-base"
@@ -41,7 +41,7 @@ const Navbar = () => {
             >
               About
             </a>
-          </li>
+          </li> */}
         </ul>
       </div>
     </nav>
